@@ -1,0 +1,16 @@
+PID,Group,RExp,Gxp,Age,Program
+P1,P,9,10,25-30,Master
+P2,P,7,4,25-30,Master
+P4,P,8,16,25-30,Master
+P5,P,10,8,25-30,Unknown
+P6,P,8,17,31-40,Doctorate
+P7,P,8,11,25-30,Master
+P8,P,8,9,31-40,Doctorate
+P9,P,10,12,25-30,Master
+A1,A,10,10,19-24,Master
+A2,A,8,8,19-24,Master
+A4,A,10,13,25-30,Bachelor
+A5,A,7,9,19-24,Bachelor
+A7,A,9,18,25-30,Master
+A8,A,9,10,25-30,Doctorate
+A10,A,8,9,25-30,Doctorate
