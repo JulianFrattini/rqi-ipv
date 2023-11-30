@@ -14,74 +14,25 @@ library(rcompanion)
 library(psych)
 ```
 
-This document contains the frequentist analysis performed by Femmer et al.^[Femmer, H., Kučera, J., & Vetrò, A. (2014, September). On the impact of passive voice requirements on domain modelling. In Proceedings of the 8th ACM/IEEE International Symposium on Empirical Software Engineering and Measurement (pp. 1-4).].
+This document contains a reproduction of the original, frequentist analysis performed by Femmer et al.^[Femmer, H., Kučera, J., & Vetrò, A. (2014, September). On the impact of passive voice requirements on domain modelling. In Proceedings of the 8th ACM/IEEE International Symposium on Empirical Software Engineering and Measurement (pp. 1-4).].
 
 ## Data Loading
 
-We start by loading the data which is disclosed at https://doi.org/10.5281/zenodo.7499290.
+We start by loading the data which is disclosed at https://doi.org/10.5281/zenodo.7499290. The original evaluation of the experiment by Femmer et al. only considers data about the responses.
 
 ```{r data-load}
-participants <- read.csv(file="../data/participants.csv")
-experience <- read.csv(file="../data/experience.csv")
-requirements <- read.csv(file="../data/requirements.csv")
-responses <- read.csv(file="../data/responses.csv")
+d <- read.csv(file="../data/responses.csv")
 ```
 
-Join the three separate tables and rename some columns.
+The data consists of the following columns:
 
-```{r data-join}
-d <- responses %>% 
-  full_join(participants) %>% # add information about the participants
-  full_join(experience) %>% # add information about the participants' experience
-  full_join(requirements) %>% # get information about the expected actors etc. of the requirement
-  mutate(
-    passive = if_else(startsWith(PID, 'P'), TRUE, FALSE), # introduce a factor variable for passive voice
-
-    actors.missing = if_else(MAct > EAct, EAct, MAct), # cutoff missing actors by expected actors
-    actors.found = EAct-actors.missing, # inverse missed to found actors
-    actors.expected = EAct, # spell out the variable
-  
-    associations.missing = if_else(MAsc > EAsc, EAsc, MAsc),
-    associations.found = EAsc-associations.missing,
-    associations.expected = EAsc,
-    
-    entities.missing = if_else(MEnt > EEnt, EEnt, MEnt),
-    entities.found = EEnt-entities.missing,
-    entities.expected = EEnt,
-    
-    REQuizPerformance = RExp)
-  # ) %>% 
-  # select(
-  #   PID, RID, 
-  #   Age, Program, REQuizPerformance, 
-  #   ExpProgAca, ExpProgInd, ExpSEAca, ExpSEInd, ExpREAca, ExpREInd, 
-  #   passive, 
-  #   actors.expected, actors.found, actors.missing, 
-  #   associations.expected, associations.found, associations.missing,
-  #   entities.expected, entities.found, entities.missing)
-```
-
-Cast categorical variables as such. The age, program, and all experience variables are categorical (and ordered). Hence, we flag them as such in the data set.
-
-```{r data-factors}
-cat_age <- c("19-24", "25-30", "31-40")
-cat_exp <- c("no experience", "up to 6 months", "6 to 12 months", "more than 12 months")
-cat_prg <- c("Unknown", "Bachelor", "Master", "Doctorate")
-
-
-d$Age <- factor(d$Age, levels=cat_age, ordered=TRUE)
-
-d$ExpProgAca <- factor(d$ExpProgAca, levels=cat_exp, ordered=TRUE)
-d$ExpProgInd <- factor(d$ExpProgInd, levels=cat_exp, ordered=TRUE)
-d$ExpSEAca <- factor(d$ExpSEAca, levels=cat_exp, ordered=TRUE)
-d$ExpSEInd <- factor(d$ExpSEInd, levels=cat_exp, ordered=TRUE)
-d$ExpREAca <- factor(d$ExpREAca, levels=cat_exp, ordered=TRUE)
-d$ExpREInd <- factor(d$ExpREInd, levels=cat_exp, ordered=TRUE)
-
-d$Program <- factor(d$Program, levels=cat_prg, ordered=TRUE)
-```
-
-Finally, visualize the variables of the data set to confirm that all looks correct.
+| Column | Description | Data Type |
+|---|---|---|
+| `PID` | Participant ID consisting of a group indicator ("A" for active, "P" for passive) and a numeric index | string |
+| `RID` | Requirement ID | string |
+| `MAct` | Number of missing actors | int |
+| `MEnt` | Number of missing entities | int |
+| `MAsc` | Number of missing associations | int |
 
 ```{r data-view}
 str(d)
@@ -89,7 +40,9 @@ str(d)
 
 ## Frequentist Analysis
 
-Next, we perform a frequentist analysis. We begin by suming the number of missing actors, associations, and entities per participant.
+We replicate the null-hypothesis significance test of difference from the original study. The null hypothesis is that there is no difference in the number of missing actors, entities, or associations when producing a domain model from a requirements specification using active versus passive voice.
+
+The original evaluation aggregates the results of each participant, i.e., Femmer et al. investigate whether the sum of missing actors, entities, and associations over the domain models from all requirements specifications differs between the two groups (active and passive).
 
 ```{r sum}
 d.pid <- d %>% 
@@ -103,31 +56,64 @@ d.pid <- d %>%
   )
 ```
 
-We display the mean and median of one of the variables to confirm that they are similar to what is reported in the paper by Femmer et al.
+For the evaluation, we perform a Mann-Whitney U test (i.e., a two-sample Wilcoxon test) and calculate the effect size. Additionally - like in the original experiment - we calculate the mean and median of the sum of missing actors, entities, and associations.
 
-```{r display-mean-median}
-d.pid %>% 
-  group_by(passive) %>% 
-  summarize(
-    Mean = mean(MEnt, na.rm=TRUE),
-    Median = median(MEnt, na.rm=TRUE)
-  )
+```{r analysis, warning=FALSE}
+# define a data frame with all fields that also the original study reported
+results <- data.frame(
+  activity = character(),
+  mean.a = double(),
+  mean.p = double(),
+  median.a = double(),
+  median.p = double(),
+  p = double(),
+  conf.int.lower = double(),
+  conf.int.upper = double(),
+  cliffs.delta = double()
+)
+
+for (var in c("MAct", "MEnt", "MAsc")) {
+  # calculate the mean and median of the dependent variable for both groups (active and passive)
+  mean.a = mean(filter(d.pid, passive==0)[[var]], na.rm=TRUE)
+  mean.p = mean(filter(d.pid, passive==1)[[var]], na.rm=TRUE)
+  median.a = median(filter(d.pid, passive==0)[[var]], na.rm=TRUE)
+  median.p = median(filter(d.pid, passive==1)[[var]], na.rm=TRUE)
+  
+  # perform the Mann Whitney U test
+  hypo.test = wilcox.test(x = filter(d.pid, passive==1)[[var]], y = filter(d.pid, passive==0)[[var]], 
+                  conf.int = TRUE, paired = FALSE)
+  # calculate the effect size of the test
+  cliffs = cliffDelta(x = filter(d.pid, passive==1)[[var]], y = filter(d.pid, passive==0)[[var]])
+  
+  results <- rbind(results,
+                   list(
+                     activity = var,
+                     mean.a = mean.a,
+                     mean.p = mean.p,
+                     median.a = median.a,
+                     median.p = median.p,
+                     p = hypo.test$p.value,
+                     conf.int.lower = hypo.test$conf.int[1],
+                     conf.int.upper = hypo.test$conf.int[2],
+                     cliffs.delta = cliffs
+                   ))
+}
 ```
 
-Additionally, plot the distributions as box plots.
+The resulting data looks as follows:
 
-```{r display-distribution}
-d.pid %>% 
-  ggplot(aes(x=as.factor(passive), y=MAsc)) +
-  geom_boxplot()
+```{r results}
+knitr::kable(results, "simple")
 ```
 
-Finally, perform a Mann-Whitney U test (i.e., a two-sample Wilcoxon test).
+## Comparison
 
-```{r hypothesis-test}
-wilcox.test(x = filter(d.pid, passive==1)$MAsc,
-            y = filter(d.pid, passive==0)$MAsc,
-            conf.int = TRUE,
-            paired = FALSE)
-```
+We compare our results to the results of the original paper:
 
+| activity | mean.a | mean.p | median.a | median.p | p | conf.int | cliffs.delta |
+|---|---|---|---|---|---|---|---|
+| actors | 0.43 | 1.00 | 0 | 1 | 0.10 | (0; $\infty$) | 0.39 |
+| objects | 1.29 | 2.00 | 1 | 1 | 0.25 | (-1; $\infty$) | 0.25 |
+| associations | 4.14 | 7.88 | 3 | 8 | 0.02 | (1; $\infty$) | 0.75 |
+
+Our results are very similar. The calculated p-values differ, though their implication (i.e., which null-hypothesis to reject with $\alpha=0.05$) remains the same, and the extreme ends of the confidence intervals are vastly different.
