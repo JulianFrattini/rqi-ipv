@@ -1,0 +1,99 @@
+---
+title: "Data Preparation"
+author: "Julian Frattini"
+date: '2023-12-04'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(patchwork)
+```
+
+```{r paths}
+path_data <- "../data"
+path_figures <- "../../figures/demographics"
+```
+
+This file prepares the data for the Bayesian data analysis. It loads all individual data sheets, joins them, cleans them up, and saves the processed file for easier access.
+
+## Loading
+
+We start by loading the data which is disclosed at https://doi.org/10.5281/zenodo.7499290. This Zenodo repository contains a file called `CorrectAnswers.pdf` with all the data obtained during the experiment (responses as well as demographic data). We manually extracted this data into four separate sheets.
+
+```{r data-load}
+participants <- read.csv(file=file.path(path_data, "participants.csv"))
+experience <- read.csv(file=file.path(path_data, "experience.csv"))
+requirements <- read.csv(file=file.path(path_data, "requirements.csv"))
+responses <- read.csv(file=file.path(path_data, "responses.csv"))
+```
+
+We corrected two mistakes in the data:
+
+1. The general experience points `Gxp` of participant `P1` should be 11, not 10.
+2. The general experience points `Gxp` of participant `A10` should be 18, not 12.
+
+We identified these mistakes by comparing the values as reported in the `CorrectAnswers.pdf` with the raw responses contained in the `Form Responses-Active.csv` and `Form Responses-Passive.csv`.
+
+Next, we join all four sheets to one data frame.
+
+```{r data-join}
+d <- responses %>% 
+  full_join(participants) %>% # add information about the participants
+  full_join(experience) %>% # add information about the participants' experience
+  full_join(requirements) # get information about the expected actors etc. of the requirement
+```
+
+This joined table contains one row per created domain model. With $n_p=15$ participants and $n_r=7$ requirements, we are observing $15\times7=105$ created domain models.
+
+## Cleanup
+
+Next, we clean up the joined data by performing the following operations:
+
+1. Introducing an explicit `passive` variable that encodes whether a domain model was created based on a requirements specification using active or passive voice
+2. Cutting off the variables containing the number of missing actors, entities, and associations at the number of expected actors, entities, and associations.
+
+We performed the second step by counting the number of actors, entities, and associations that were *expected* in the sample solution according to `CorrectAnswers.pdf`. This is the maximum value for *missing* actors, entities, and associations in a domain model, since a domain model cannot miss more objects than there were objects expected.
+
+```{r data-join}
+d <- d %>%  mutate(
+    passive = if_else(startsWith(PID, 'P'), TRUE, FALSE), # introduce a factor variable for passive voice
+
+    actors.missing = if_else(MAct > EAct, EAct, MAct), # cutoff missing actors by expected actors
+    actors.found = EAct-actors.missing, # inverse missed to found actors
+    actors.expected = EAct, # spell out the variable
+  
+    associations.missing = if_else(MAsc > EAsc, EAsc, MAsc),
+    associations.found = EAsc-associations.missing,
+    associations.expected = EAsc,
+    
+    entities.missing = if_else(MEnt > EEnt, EEnt, MEnt),
+    entities.found = EEnt-entities.missing,
+    entities.expected = EEnt,
+    
+    REQuizPerformance = RExp)
+```
+
+Finally, we select only the relevant attributes of the resulting table.
+
+```{r data-select}
+d <- d %>% 
+  select(
+    PID, RID,
+    Age, Program, REQuizPerformance,
+    ExpProgAca, ExpProgInd, ExpSEAca, ExpSEInd, ExpREAca, ExpREInd,
+    passive,
+    actors.expected, actors.found, actors.missing,
+    associations.expected, associations.found, associations.missing,
+    entities.expected, entities.found, entities.missing)
+```
+
+## Data Export
+
+Store the data to make it reusable in the analyses.
+
+```{r export}
+write_csv(d, file=file.path(path_data, "ipv-data.csv"))
+```
