@@ -13,7 +13,7 @@ library(patchwork)
 ```
 
 ```{r paths}
-path_data <- "../data"
+path_data <- "../../data"
 path_figures <- "../../figures/demographics"
 ```
 
@@ -24,16 +24,16 @@ This file prepares the data for the Bayesian data analysis. It loads all individ
 We start by loading the data which is disclosed at https://doi.org/10.5281/zenodo.7499290. This Zenodo repository contains a file called `CorrectAnswers.pdf` with all the data obtained during the experiment (responses as well as demographic data). We manually extracted this data into four separate sheets.
 
 ```{r data-load}
-participants <- read.csv(file=file.path(path_data, "participants.csv"))
-experience <- read.csv(file=file.path(path_data, "experience.csv"))
-requirements <- read.csv(file=file.path(path_data, "requirements.csv"))
-responses <- read.csv(file=file.path(path_data, "responses.csv"))
+participants <- read.csv(file=file.path(path_data, "raw/participants.csv"))
+experience <- read.csv(file=file.path(path_data, "raw/experience.csv"))
+requirements <- read.csv(file=file.path(path_data, "raw/requirements.csv"))
+responses <- read.csv(file=file.path(path_data, "raw/responses.csv"))
 ```
 
 We corrected two mistakes in the data:
 
 1. The general experience points `Gxp` of participant `P1` should be 11, not 10.
-2. The general experience points `Gxp` of participant `A10` should be 18, not 12.
+2. The general experience points `Gxp` of participant `A7` should be 18, not 12.
 
 We identified these mistakes by comparing the values as reported in the `CorrectAnswers.pdf` with the raw responses contained in the `Form Responses-Active.csv` and `Form Responses-Passive.csv`.
 

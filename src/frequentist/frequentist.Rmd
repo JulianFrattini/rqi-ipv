@@ -21,7 +21,7 @@ This document contains a reproduction of the original, frequentist analysis perf
 We start by loading the data which is disclosed at https://doi.org/10.5281/zenodo.7499290. The original evaluation of the experiment by Femmer et al. only considers data about the responses.
 
 ```{r data-load}
-d <- read.csv(file="../data/responses.csv")
+d <- read.csv(file="../../data/raw/responses.csv")
 ```
 
 The data consists of the following columns:
