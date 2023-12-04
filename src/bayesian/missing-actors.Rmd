@@ -1,0 +1,112 @@
+---
+title: "Bayesian Analysis of the Impact of Passive Voice on Missing Actors"
+author: "Julian Frattini"
+date: '2023-11-30'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(patchwork)
+
+library(ggdag)
+
+library(brms)
+library(marginaleffects)
+source("../util/model-eval.R")
+```
+
+This document contains a Bayesian analysis of the hypotheses investigated by Femmer et al.^[Femmer, H., Kučera, J., & Vetrò, A. (2014, September). On the impact of passive voice requirements on domain modelling. In Proceedings of the 8th ACM/IEEE International Symposium on Empirical Software Engineering and Measurement (pp. 1-4).].
+
+## Data Loading
+
+```{r data-loading}
+source("../util/data-loading.R")
+d <- load.data()
+
+# print the data to ensure that all variables have the correct type
+str(d)
+```
+
+
+## Bayesian Analysis
+
+### Causal Assumptions
+
+(TODO: DAG)
+
+(TODO: adjustment sets)
+
+### Formula
+
+```{r formula}
+formula <- (actors.missing | trials(actors.expected) ~ 
+              1 + # standard success in the task of finding actors
+              passive + # impact of the use of passive voice
+              (1|RID) + # impact of the difficulty of the individual requirements
+              (1|PID) + # impact of the skill of individual participants
+              ExpREAca + # impact of the participants academic experience in RE
+              ExpREInd) # impact of the participants industrial experience in RE
+
+get_prior(formula, family=binomial, data=d)
+```
+
+### Priors
+
+```{r priors}
+priors <- c(prior(normal(-1, 1), class = Intercept),
+            prior(normal(0, 1), class = b),
+            prior(weibull(2, 1), class = sd, coef = Intercept, group = RID),
+            prior(weibull(2, 1), class = sd, coef = Intercept, group = PID),
+            prior(exponential(1), class = sd))
+```
+
+```{r model-prior}
+m.prior <-
+  brm(data = d, family = binomial, formula, prior = priors,
+    iter = 4000, warmup = 1000, chains = 4, cores = 4,
+    seed = 4, sample_prior="only",
+    file = "fits/m.actors.prior"
+  )
+```
+
+```{r prior-predictive-check}
+ndraws <- 400
+
+priorpc <- brms::pp_check(m.prior, type="bars", ndraws=ndraws)
+
+priorpc
+```
+
+```{r model}
+m <-
+  brm(data = d, family = binomial, formula, prior = priors,
+    iter = 4000, warmup = 1000, chains = 4, cores = 4,
+    seed = 4,
+    file = "fits/m.actors"
+  )
+```
+
+```{r posterior-predictive-check}
+postpc <- brms::pp_check(m, type="bars", ndraws=ndraws)
+
+postpc
+```
+
+```{r summary}
+summary(m)
+```
+
+```{r}
+conditional_effects(m, effects="passive")
+```
+
+```{r}
+conditional_effects(m, effects="ExpREInd")
+```
+
+```{r}
+evaluate.model(m)
+```
