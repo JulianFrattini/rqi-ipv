@@ -29,9 +29,35 @@ This repository contains the following artifacts:
     * [data-preparation.Rmd](./src/util/data-preparation.Rmd) : notebook that prepares and assembles the raw data such that it is fit for reanalysis
     * [model-eval.R](./src/util/model-eval.R) : script to evaluate the isolated difference of the response variable distribution based on different values of the treatment (passive voice)
 
+## System Requirements
+
+In order to fully utilize this replication package, ensure that you have [R](https://ftp.acc.umu.se/mirror/CRAN/) (version > 4.0) and (RStudio)[https://posit.co/download/rstudio-desktop/#download] installed on your machine. Then, ensure the following steps:
+
+1. Install the `rstan` toolchain by following the instructions for [Windows](https://github.com/stan-dev/rstan/wiki/Configuring-C---Toolchain-for-Windows#r40), [Mac OS](https://github.com/stan-dev/rstan/wiki/Configuring-C---Toolchain-for-Mac), or [Linux](https://github.com/stan-dev/rstan/wiki/Configuring-C-Toolchain-for-Linux) respectively.
+2. Restart RStudio and follow the instructions starting with the [Installation of RStan](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#installation-of-rstan)
+3. Install the latest version of `stan` by running the following commands
+```
+    install.package("devtools")
+    devtools::install_github("stan-dev/cmdstanr")
+    cmdstanr::install_cmdstan()
+```
+4. Install all missing packages via `install.packages(c("tidyverse","ggdag","dagitty","patchwork","brms","marginaleffects","rcompanion","psych"))`
+5. Create a folder called *fits* within *src/bayesian/* such that `brms` has a location to place all Bayesian models.
+
+## Application
+
+If you want to replicate and assess the evaluation presented in the accompanying manuscript, we recommend looking at the following files in this order. For each script, you can choose the interactive `Rmd` file that allows to inspect and manipulate each variable, or the `html` file, which is a pre-compiled version of each `Rmd` notebook.
+
+1. **Data preparation** ([interactive](./src/util/data-preparation.Rmd) or [static](./src/html/data-preparation.html)) to understand the data under analysis.
+2. **Frequentist analysis** ([interactive](./src/frequentist/frequentist.Rmd) or [static](./src/html/frquentist.html)) to understand the frequentist data analysis of the original experiment [1].
+3. **Causal assumptions** ([interactive](./src/bayesian/causal-assumptions.Rmd) or [static](./src/html/causal-assumptions.html)) to inspect the causal assumptions about the studied phenomenon. This covers the *modeling* and *identification* step of the applied framework for statistical causal inference [2].
+4. **Bayesian data analysis** (files prefixed with `missing-` in the [bayesian](./src/bayesian) and [html](./src/html))  to follow the regression modeling of all three response variables of interest. This covers the *estimation* step of the applied framework for statistical causal inference [2].
+
 ## References
 
 [1] Femmer, H., Kučera, J., & Vetrò, A. (2014, September). On the impact of passive voice requirements on domain modelling. In Proceedings of the 8th ACM/IEEE international symposium on empirical software engineering and measurement (pp. 1-4).
+
+[2] Siebert, J. (2023). Applications of statistical causal inference in software engineering. Information and Software Technology, 107198.
 
 ## Licensing
 
