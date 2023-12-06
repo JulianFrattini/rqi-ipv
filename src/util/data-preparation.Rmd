@@ -17,9 +17,11 @@ path_data <- "../../data"
 path_figures <- "../../figures/demographics"
 ```
 
-This file prepares the data for the Bayesian data analysis. It loads all individual data sheets, joins them, cleans them up, and saves the processed file for easier access.
+This file prepares the data for the Bayesian data analysis. It loads all individual data sheets, joins them, cleans them up, and saves the processed file for easier access. Then, it visualizes the distributions in the data to provide a feel for it.
 
-## Loading
+## Data Preparation
+
+### Loading
 
 We start by loading the data which is disclosed at https://doi.org/10.5281/zenodo.7499290. This Zenodo repository contains a file called `CorrectAnswers.pdf` with all the data obtained during the experiment (responses as well as demographic data). We manually extracted this data into four separate sheets.
 
@@ -48,7 +50,7 @@ d <- responses %>%
 
 This joined table contains one row per created domain model. With $n_p=15$ participants and $n_r=7$ requirements, we are observing $15\times7=105$ created domain models.
 
-## Cleanup
+### Cleanup
 
 Next, we clean up the joined data by performing the following operations:
 
@@ -90,10 +92,101 @@ d <- d %>%
     objects.expected, objects.found, objects.missing)
 ```
 
-## Data Export
+### Data Export
 
 Store the data to make it reusable in the analyses.
 
 ```{r export}
 write_csv(d, file=file.path(path_data, "ipv-data.csv"))
 ```
+
+## Data Visualization
+
+### Participants
+
+The first figures visualize the distribution of the recorded context factors of the participating experiment subjects.
+
+```{r vis-age}
+participants %>% ggplot(aes(x=Age)) +
+  geom_histogram(stat="count")
+```
+
+```{r vis-program}
+participants %>% ggplot(aes(x=Program)) +
+  geom_histogram(stat="count")
+```
+
+```{r vis-exp}
+cat_exp <- c("no experience", "up to 6 months", "6 to 12 months", "more than 12 months")
+experience$ExpProgAca <- factor(experience$ExpProgAca, levels=cat_exp, ordered=TRUE)
+experience$ExpProgInd <- factor(experience$ExpProgInd, levels=cat_exp, ordered=TRUE)
+experience$ExpSEAca <- factor(experience$ExpSEAca, levels=cat_exp, ordered=TRUE)
+experience$ExpSEInd <- factor(experience$ExpSEInd, levels=cat_exp, ordered=TRUE)
+experience$ExpREAca <- factor(experience$ExpREAca, levels=cat_exp, ordered=TRUE)
+experience$ExpREInd <- factor(experience$ExpREInd, levels=cat_exp, ordered=TRUE)
+
+experience %>% 
+  pivot_longer(
+    cols = c(ExpProgAca, ExpProgInd, ExpSEAca, ExpSEInd, ExpREAca, ExpREInd),
+    names_to = "exp",
+    values_to = "value"
+    ) %>% 
+  select(exp, value) %>% 
+  group_by(exp, value) %>% 
+  summarize(n=n()) %>% 
+  ggplot(aes(x=exp, y=n, fill=fct_rev(value))) +
+    geom_bar(position = "stack", stat = "identity") + 
+    coord_flip()
+```
+
+### Requirements
+
+Additionally, we output the number of expected actors, objects (`EEnt`), and associations.
+
+```{r vis-expected}
+requirements
+```
+
+Finally, we plot the distribution of missing actors, domain objects, and associations from the 105 domain models produced during the experimental task.
+
+```{r viz-missing}
+d.missing <- d %>% 
+  select(passive, actors.missing, objects.missing, associations.missing) %>% 
+  pivot_longer(
+    cols = c(actors.missing, objects.missing, associations.missing),
+    names_to = "entity",
+    values_to = "value"
+  )
+
+d.missing %>% 
+  ggplot(aes(x=value, fill=passive)) +
+  geom_boxplot() +
+  facet_wrap(~entity, ncol=1)
+```
+
+Note that this is a distribution of the number of missing actors, domain objects, and associations *per observation*, not per participant like in the original study. The two plots are not comparable. The following figure replicates the figure from the original manuscript by aggregating all participants.
+
+```{r vis-missing-aggregated}
+d %>% 
+  group_by(PID) %>% 
+  summarize(
+    actors.missing = sum(actors.missing),
+    objects.missing = sum(objects.missing),
+    associations.missing = sum(associations.missing)
+  ) %>% mutate(
+    passive = if_else(startsWith(PID, 'P'), 1, 0)
+  ) %>% 
+  pivot_longer(
+    cols = c(actors.missing, objects.missing, associations.missing),
+    names_to = "entity",
+    values_to = "value"
+  ) %>% 
+  mutate(
+    entity = factor(entity, levels=c("actors.missing", "objects.missing", "associations.missing"), ordered=TRUE)
+  ) %>% 
+   ggplot(aes(x=value, fill=as.factor(passive))) +
+   geom_boxplot() +
+   facet_wrap(~entity) +
+    coord_flip()
+```
+
