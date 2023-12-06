@@ -33,11 +33,7 @@ str(d)
 
 ## Bayesian Analysis
 
-### Causal Assumptions
-
-(TODO: DAG)
-
-(TODO: adjustment sets)
+We perform the final step of the statistical causal inference framework by Siebert^[Siebert, J. (2023). Applications of statistical causal inference in software engineering. Information and Software Technology, 107198.], i.e., the estimation step, based on the two previous modeling and identification steps as documented in (the causal assumptions notebook)[./causal-assumptions.Rmd].
 
 ### Formula
 
