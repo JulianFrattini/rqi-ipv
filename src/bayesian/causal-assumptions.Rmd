@@ -51,9 +51,9 @@ These variables have the following meaning:
 | actors.expected | Number of expected actors in the sample solution of the domain model | $\mathbb{N}$ |
 | actors.found | Number of relevant actors included in the the solution provided by the participant | [0, actors.expected] |
 | actors.missing | Number of relevant actors missing from the solution provided by the participant (i.e., actors.expected-actors.found) | [0, actors.expected] |
-| entities.expected | Number of expected domain objects in the sample solution of the domain model | $\mathbb{N}$ |
-| entities.found | Number of relevant domain objects included in the the solution provided by the participant | [0, entities.expected] |
-| entities.missing | Number of relevant domain objects missing from the solution provided by the participant (i.e., entities.expected-entities.found) | [0, entities.expected] |
+| objects.expected | Number of expected domain objects in the sample solution of the domain model | $\mathbb{N}$ |
+| objects.found | Number of relevant domain objects included in the the solution provided by the participant | [0, objects.expected] |
+| objects.missing | Number of relevant domain objects missing from the solution provided by the participant (i.e., objects.expected-objects.found) | [0, objects.expected] |
 | associations.expected | Number of expected associations in the sample solution of the domain model | $\mathbb{N}$ |
 | associations.found | Number of relevant associations included in the the solution provided by the participant | [0, associations.expected] |
 | associations.missing | Number of relevant associations missing from the solution provided by the participant (i.e., associations.expected-associations.found) | [0, associations.expected] |
@@ -69,9 +69,9 @@ We assume the following causal relationships between variables:
 | Program $\rightarrow$ Exp(Prog/SE/RE)Aca | The older a participant the more likely it is that they have gained more academic experience in programming, software engineering, and requirements engineering |
 | ExpSE(Aca/Ind) $\rightarrow$ Exp(Prog/RE)(Aca/Ind) | The higher the experience in software engineering, the higher the experience in programming and requirements engineering as those are sub-areas of SE |
 | ExpREAca, ExpREInd $\rightarrow$ REQuizPerformance | The higher the experience in requirements engineering, the better the performance in the RE quiz |
-| ExpRE(Aca/Ind) $\rightarrow$ actors/associations/entities.missing | The higher the (industrial or academic) experience in requirements engineering, the fewer actors, associations, and entities are missing |
-| Passive $\rightarrow$ actors/associations/entitiesmissing | **If the requirement is written using passive voice, less actors, associations, and entities are found** |
-| actors/entities.missing $\rightarrow$ associations.missing | If an actor or entity was missed then associations between other actors/entities and the missed one are consequently also missing |
+| ExpRE(Aca/Ind) $\rightarrow$ actors/associations/objects.missing | The higher the (industrial or academic) experience in requirements engineering, the fewer actors, associations, and domain objects are missing |
+| Passive $\rightarrow$ actors/associations/objects.missing | **If the requirement is written using passive voice, less actors, associations, and domain objects are found** |
+| actors/objects.missing $\rightarrow$ associations.missing | If an actor or domain object was missed then associations between other actors/domain objects and the missed one are consequently also missing |
 
 ### Directed Acyclic Graph
 
@@ -88,14 +88,14 @@ dag <- dagify(
   ExpREInd ~ Program + Age + ExpSEInd,
   REQuizPerformance ~ ExpREAca + ExpREInd,
   actors.missing ~ ExpREAca + ExpREInd + passive,
-  entities.missing ~ ExpREAca + ExpREInd + passive,
-  associations.missing ~ ExpREAca + ExpREInd + passive + actors.missing + entities.missing,
-  exposure = "passive", outcome = c("actors.missing", "entities.missing", "associations.missing"),
-  labels = c(Age = "Age", Program = "Program", ExpSEAca = "Academic experience in SE", ExpSEInd = "Industrial experience in SE", ExpProgAca = "Academic experience in Programming", ExpProgInd = "Industrial experience in Programming", ExpREAca = "Academic experience in RE", ExpREInd = "Industrial experience in RE", REQuizPerformance = "Performance in RE Quiz", passive = "Passive Voice", actors.missing = "Number of missing actors", entities.missing = "Number of missing domain objects", associations.missing = "Number of missing associations"),
+  objects.missing ~ ExpREAca + ExpREInd + passive,
+  associations.missing ~ ExpREAca + ExpREInd + passive + actors.missing + objects.missing,
+  exposure = "passive", outcome = c("actors.missing", "objects.missing", "associations.missing"),
+  labels = c(Age = "Age", Program = "Program", ExpSEAca = "Academic experience in SE", ExpSEInd = "Industrial experience in SE", ExpProgAca = "Academic experience in Programming", ExpProgInd = "Industrial experience in Programming", ExpREAca = "Academic experience in RE", ExpREInd = "Industrial experience in RE", REQuizPerformance = "Performance in RE Quiz", passive = "Passive Voice", actors.missing = "Number of missing actors", objects.missing = "Number of missing domain objects", associations.missing = "Number of missing associations"),
   
   coords = list(
-    x=c(Age=0, Program=0.2, ExpProgAca=2.4, ExpProgInd=2.4, ExpSEAca=2, ExpSEInd=2, ExpREAca=2.4, ExpREInd=2.4, REQuizPerformance=2, passive=3, actors.missing=4, associations.missing=4,entities.missing=4),
-    y=c(Age=-1, Program=-2, ExpProgAca=0, ExpProgInd=-0.5, ExpSEAca=-1, ExpSEInd=-1.5, ExpREAca=-2, ExpREInd=-2.5, REQuizPerformance=-3, passive=-3.5, actors.missing=-1.5, associations.missing=-2.5,entities.missing=-3.5)
+    x=c(Age=0, Program=0.2, ExpProgAca=2.4, ExpProgInd=2.4, ExpSEAca=2, ExpSEInd=2, ExpREAca=2.4, ExpREInd=2.4, REQuizPerformance=2, passive=3, actors.missing=4, associations.missing=4,objects.missing=4),
+    y=c(Age=-1, Program=-2, ExpProgAca=0, ExpProgInd=-0.5, ExpSEAca=-1, ExpSEInd=-1.5, ExpREAca=-2, ExpREInd=-2.5, REQuizPerformance=-3, passive=-3.5, actors.missing=-1.5, associations.missing=-2.5,objects.missing=-3.5)
   )
 )
 
@@ -115,7 +115,7 @@ We determine the adjustment sets, which automatically applies four criteria of c
 
 ```{r adjustment-sets}
 adjustmentSets(dag, exposure="passive", outcome="actors.missing", effect="direct")
-adjustmentSets(dag, exposure="passive", outcome="entities.missing", effect="direct")
+adjustmentSets(dag, exposure="passive", outcome="objects.missing", effect="direct")
 adjustmentSets(dag, exposure="passive", outcome="associations.missing", effect="direct")
 ```
 
@@ -126,14 +126,14 @@ Based on these adjustment sets, we consider the following subset of the original
 ```{r reduced-dag}
 dag <- dagify(
   actors.missing ~ ExpREAca + ExpREInd + passive,
-  entities.missing ~ ExpREAca + ExpREInd + passive,
-  associations.missing ~ ExpREAca + ExpREInd + passive + actors.missing + entities.missing,
-  exposure = "passive", outcome = c("actors.missing", "entities.missing", "associations.missing"),
-  labels = c(Age = "Age", Program = "Program", ExpSEAca = "Academic experience in SE", ExpSEInd = "Industrial experience in SE", ExpProgAca = "Academic experience in Programming", ExpProgInd = "Industrial experience in Programming", ExpREAca = "Academic experience in RE", ExpREInd = "Industrial experience in RE", REQuizPerformance = "Performance in RE Quiz", passive = "Passive Voice", actors.missing = "Number of missing actors", entities.missing = "Number of missing domain objects", associations.missing = "Number of missing associations"),
+  objects.missing ~ ExpREAca + ExpREInd + passive,
+  associations.missing ~ ExpREAca + ExpREInd + passive + actors.missing + objects.missing,
+  exposure = "passive", outcome = c("actors.missing", "objects.missing", "associations.missing"),
+  labels = c(Age = "Age", Program = "Program", ExpSEAca = "Academic experience in SE", ExpSEInd = "Industrial experience in SE", ExpProgAca = "Academic experience in Programming", ExpProgInd = "Industrial experience in Programming", ExpREAca = "Academic experience in RE", ExpREInd = "Industrial experience in RE", REQuizPerformance = "Performance in RE Quiz", passive = "Passive Voice", actors.missing = "Number of missing actors", objects.missing = "Number of missing domain objects", associations.missing = "Number of missing associations"),
   
   coords = list(
-    x=c(ExpREAca=2.4, ExpREInd=2.4, passive=3, actors.missing=4, associations.missing=4,entities.missing=4),
-    y=c(ExpREAca=-2, ExpREInd=-2.5, passive=-3.5, actors.missing=-1.5, associations.missing=-2.5,entities.missing=-3.5)
+    x=c(ExpREAca=2.4, ExpREInd=2.4, passive=3, actors.missing=4, associations.missing=4,objects.missing=4),
+    y=c(ExpREAca=-2, ExpREInd=-2.5, passive=-3.5, actors.missing=-1.5, associations.missing=-2.5,objects.missing=-3.5)
   )
 )
 

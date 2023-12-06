@@ -1,5 +1,5 @@
 ---
-title: "Bayesian Analysis of the Impact of Passive Voice on Missing Entities"
+title: "Bayesian Analysis of the Impact of Passive Voice on Missing Domain Objects"
 author: "Julian Frattini"
 date: '2023-12-04'
 output: html_document
@@ -38,7 +38,7 @@ We perform the final step of the statistical causal inference framework by Siebe
 ### Formula
 
 ```{r formula}
-formula <- (entities.missing | trials(entities.expected) ~ 
+formula <- (objects.missing | trials(objects.expected) ~ 
               1 + # standard success in the task of finding actors
               passive + # impact of the use of passive voice
               (1|RID) + # impact of the difficulty of the individual requirements
@@ -64,7 +64,7 @@ m.prior <-
   brm(data = d, family = binomial, formula, prior = priors,
     iter = 4000, warmup = 1000, chains = 4, cores = 4,
     seed = 4, sample_prior="only",
-    #file = "fits/m.entities.prior"
+    file = "fits/m.objects.prior"
   )
 ```
 
@@ -81,14 +81,12 @@ m <-
   brm(data = d, family = binomial, formula, prior = priors,
     iter = 4000, warmup = 1000, chains = 4, cores = 4,
     seed = 4,
-    file = "fits/m.entities"
+    file = "fits/m.objects"
   )
 ```
 
 ```{r posterior-predictive-check}
-postpc <- brms::pp_check(m, type="bars", ndraws=ndraws)
-
-postpc
+brms::pp_check(m, type="bars", ndraws=ndraws)
 ```
 
 ```{r summary}
@@ -97,10 +95,6 @@ summary(m)
 
 ```{r}
 conditional_effects(m, effects="passive")
-```
-
-```{r}
-conditional_effects(m, effects="ExpREInd")
 ```
 
 ```{r}

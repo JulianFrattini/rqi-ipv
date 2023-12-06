@@ -31,7 +31,7 @@ The data consists of the following columns:
 | `PID` | Participant ID consisting of a group indicator ("A" for active, "P" for passive) and a numeric index | string |
 | `RID` | Requirement ID | string |
 | `MAct` | Number of missing actors | int |
-| `MEnt` | Number of missing entities | int |
+| `MEnt` | Number of missing domain objects | int |
 | `MAsc` | Number of missing associations | int |
 
 ```{r data-view}
@@ -40,9 +40,9 @@ str(d)
 
 ## Frequentist Analysis
 
-We replicate the null-hypothesis significance test of difference from the original study. The null hypothesis is that there is no difference in the number of missing actors, entities, or associations when producing a domain model from a requirements specification using active versus passive voice.
+We replicate the null-hypothesis significance test of difference from the original study. The null hypothesis is that there is no difference in the number of missing actors, domain objects, or associations when producing a domain model from a requirements specification using active versus passive voice.
 
-The original evaluation aggregates the results of each participant, i.e., Femmer et al. investigate whether the sum of missing actors, entities, and associations over the domain models from all requirements specifications differs between the two groups (active and passive).
+The original evaluation aggregates the results of each participant, i.e., Femmer et al. investigate whether the sum of missing actors, domain objects, and associations over the domain models from all requirements specifications differs between the two groups (active and passive).
 
 ```{r sum}
 d.pid <- d %>% 
@@ -56,7 +56,7 @@ d.pid <- d %>%
   )
 ```
 
-For the evaluation, we perform a Mann-Whitney U test (i.e., a two-sample Wilcoxon test) and calculate the effect size. Additionally - like in the original experiment - we calculate the mean and median of the sum of missing actors, entities, and associations.
+For the evaluation, we perform a Mann-Whitney U test (i.e., a two-sample Wilcoxon test) and calculate the effect size. Additionally - like in the original experiment - we calculate the mean and median of the sum of missing actors, domain objects, and associations.
 
 ```{r analysis, warning=FALSE}
 # define a data frame with all fields that also the original study reported
@@ -71,6 +71,8 @@ results <- data.frame(
   conf.int.upper = double(),
   cliffs.delta = double()
 )
+
+variable.name.map <- c("MAct"="actors", "MEnt"="objects", "MAsc"="associations")
 
 for (var in c("MAct", "MEnt", "MAsc")) {
   # calculate the mean and median of the dependent variable for both groups (active and passive)
@@ -87,7 +89,7 @@ for (var in c("MAct", "MEnt", "MAsc")) {
   
   results <- rbind(results,
                    list(
-                     activity = var,
+                     activity = variable.name.map[var],
                      mean.a = mean.a,
                      mean.p = mean.p,
                      median.a = median.a,

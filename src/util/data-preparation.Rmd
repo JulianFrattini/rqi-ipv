@@ -53,11 +53,11 @@ This joined table contains one row per created domain model. With $n_p=15$ parti
 Next, we clean up the joined data by performing the following operations:
 
 1. Introducing an explicit `passive` variable that encodes whether a domain model was created based on a requirements specification using active or passive voice
-2. Cutting off the variables containing the number of missing actors, entities, and associations at the number of expected actors, entities, and associations.
+2. Cutting off the variables containing the number of missing actors, domain objects, and associations at the number of expected actors, domain objects, and associations.
 
-We performed the second step by counting the number of actors, entities, and associations that were *expected* in the sample solution according to `CorrectAnswers.pdf`. This is the maximum value for *missing* actors, entities, and associations in a domain model, since a domain model cannot miss more objects than there were objects expected.
+We performed the second step by counting the number of actors, domain objects, and associations that were *expected* in the sample solution according to `CorrectAnswers.pdf`. This is the maximum value for *missing* actors, domain objects, and associations in a domain model, since a domain model cannot miss more entities than there were entities expected.
 
-```{r data-join}
+```{r data-mutate}
 d <- d %>%  mutate(
     passive = if_else(startsWith(PID, 'P'), TRUE, FALSE), # introduce a factor variable for passive voice
 
@@ -69,9 +69,9 @@ d <- d %>%  mutate(
     associations.found = EAsc-associations.missing,
     associations.expected = EAsc,
     
-    entities.missing = if_else(MEnt > EEnt, EEnt, MEnt),
-    entities.found = EEnt-entities.missing,
-    entities.expected = EEnt,
+    objects.missing = if_else(MEnt > EEnt, EEnt, MEnt),
+    objects.found = EEnt-objects.missing,
+    objects.expected = EEnt,
     
     REQuizPerformance = RExp)
 ```
@@ -87,7 +87,7 @@ d <- d %>%
     passive,
     actors.expected, actors.found, actors.missing,
     associations.expected, associations.found, associations.missing,
-    entities.expected, entities.found, entities.missing)
+    objects.expected, objects.found, objects.missing)
 ```
 
 ## Data Export

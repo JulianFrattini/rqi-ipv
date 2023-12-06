@@ -45,7 +45,8 @@ formula <- (associations.missing | trials(associations.expected) ~
               (1|PID) + # impact of the skill of individual participants
               ExpREAca + # impact of the participants academic experience in RE
               ExpREInd + # impact of the participants industrial experience in RE
-              actors.missing + entities.missing
+              actors.missing + # impact of missing actors
+              objects.missing # impact of missing domain objects
             )
 
 get_prior(formula, family=binomial, data=d)
@@ -106,7 +107,7 @@ conditional_effects(m, effects="ExpREInd")
 ```
 
 ```{r}
-conditional_effects(m, effects=c("actors.missing", "entities.missing"))
+conditional_effects(m, effects=c("actors.missing", "objects.missing"))
 ```
 
 ```{r}

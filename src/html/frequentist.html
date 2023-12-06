@@ -176,7 +176,7 @@ pre code {
 <div id="data-loading" class="section level2">
 <h2>Data Loading</h2>
 <p>We start by loading the data which is disclosed at <a href="https://doi.org/10.5281/zenodo.7499290" class="uri">https://doi.org/10.5281/zenodo.7499290</a>. The original evaluation of the experiment by Femmer et al. only considers data about the responses.</p>
-<pre class="r"><code>d &lt;- read.csv(file=&quot;../data/responses.csv&quot;)</code></pre>
+<pre class="r"><code>d &lt;- read.csv(file=&quot;../../data/raw/responses.csv&quot;)</code></pre>
 <p>The data consists of the following columns:</p>
 <table>
 <colgroup>
@@ -209,7 +209,7 @@ pre code {
 </tr>
 <tr class="even">
 <td><code>MEnt</code></td>
-<td>Number of missing entities</td>
+<td>Number of missing domain objects</td>
 <td>int</td>
 </tr>
 <tr class="odd">
@@ -229,8 +229,8 @@ pre code {
 </div>
 <div id="frequentist-analysis" class="section level2">
 <h2>Frequentist Analysis</h2>
-<p>We replicate the null-hypothesis significance test of difference from the original study. The null hypothesis is that there is no difference in the number of missing actors, entities, or associations when producing a domain model from a requirements specification using active versus passive voice.</p>
-<p>The original evaluation aggregates the results of each participant, i.e., Femmer et al. investigate whether the sum of missing actors, entities, and associations over the domain models from all requirements specifications differs between the two groups (active and passive).</p>
+<p>We replicate the null-hypothesis significance test of difference from the original study. The null hypothesis is that there is no difference in the number of missing actors, domain objects, or associations when producing a domain model from a requirements specification using active versus passive voice.</p>
+<p>The original evaluation aggregates the results of each participant, i.e., Femmer et al. investigate whether the sum of missing actors, domain objects, and associations over the domain models from all requirements specifications differs between the two groups (active and passive).</p>
 <pre class="r"><code>d.pid &lt;- d %&gt;% 
   group_by(PID) %&gt;% 
   summarize(
@@ -240,7 +240,7 @@ pre code {
   ) %&gt;% mutate(
     passive = if_else(startsWith(PID, &#39;P&#39;), 1, 0)
   )</code></pre>
-<p>For the evaluation, we perform a Mann-Whitney U test (i.e., a two-sample Wilcoxon test) and calculate the effect size. Additionally - like in the original experiment - we calculate the mean and median of the sum of missing actors, entities, and associations.</p>
+<p>For the evaluation, we perform a Mann-Whitney U test (i.e., a two-sample Wilcoxon test) and calculate the effect size. Additionally - like in the original experiment - we calculate the mean and median of the sum of missing actors, domain objects, and associations.</p>
 <pre class="r"><code># define a data frame with all fields that also the original study reported
 results &lt;- data.frame(
   activity = character(),
@@ -253,6 +253,8 @@ results &lt;- data.frame(
   conf.int.upper = double(),
   cliffs.delta = double()
 )
+
+variable.name.map &lt;- c(&quot;MAct&quot;=&quot;actors&quot;, &quot;MEnt&quot;=&quot;objects&quot;, &quot;MAsc&quot;=&quot;associations&quot;)
 
 for (var in c(&quot;MAct&quot;, &quot;MEnt&quot;, &quot;MAsc&quot;)) {
   # calculate the mean and median of the dependent variable for both groups (active and passive)
@@ -269,7 +271,7 @@ for (var in c(&quot;MAct&quot;, &quot;MEnt&quot;, &quot;MAsc&quot;)) {
   
   results &lt;- rbind(results,
                    list(
-                     activity = var,
+                     activity = variable.name.map[var],
                      mean.a = mean.a,
                      mean.p = mean.p,
                      median.a = median.a,
@@ -298,7 +300,7 @@ for (var in c(&quot;MAct&quot;, &quot;MEnt&quot;, &quot;MAsc&quot;)) {
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">MAct</td>
+<td align="left">actors</td>
 <td align="right">0.4285714</td>
 <td align="right">1.000</td>
 <td align="right">0</td>
@@ -309,7 +311,7 @@ for (var in c(&quot;MAct&quot;, &quot;MEnt&quot;, &quot;MAsc&quot;)) {
 <td align="right">0.375</td>
 </tr>
 <tr class="even">
-<td align="left">MEnt</td>
+<td align="left">objects</td>
 <td align="right">1.2857143</td>
 <td align="right">2.000</td>
 <td align="right">1</td>
@@ -320,7 +322,7 @@ for (var in c(&quot;MAct&quot;, &quot;MEnt&quot;, &quot;MAsc&quot;)) {
 <td align="right">0.214</td>
 </tr>
 <tr class="odd">
-<td align="left">MAsc</td>
+<td align="left">associations</td>
 <td align="right">4.1428571</td>
 <td align="right">7.875</td>
 <td align="right">3</td>
