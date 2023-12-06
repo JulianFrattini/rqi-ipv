@@ -22,6 +22,8 @@ This document contains a Bayesian analysis of the hypotheses investigated by Fem
 
 ## Data Loading
 
+Start by loading the prepared data.
+
 ```{r data-loading}
 source("../util/data-loading.R")
 d <- load.data()
@@ -33,9 +35,11 @@ str(d)
 
 ## Bayesian Analysis
 
-We perform the final step of the statistical causal inference framework by Siebert^[Siebert, J. (2023). Applications of statistical causal inference in software engineering. Information and Software Technology, 107198.], i.e., the estimation step, based on the two previous modeling and identification steps as documented in (the causal assumptions notebook)[./causal-assumptions.Rmd].
+We perform the final step of the statistical causal inference framework by Siebert^[Siebert, J. (2023). Applications of statistical causal inference in software engineering. Information and Software Technology, 107198.], i.e., the estimation step, based on the two previous modeling and identification steps as documented in the causal assumptions notebook.
 
 ### Formula
+
+First, we define a regression model that predicts the number of missing actors based on a set of predictors identified during the causal assumptions. The most eligible probability distribution of the response variable is a Binomial distribution, since the response variable is a whole number bounded by the expected number of actors.
 
 ```{r formula}
 formula <- (actors.missing | trials(actors.expected) ~ 
@@ -51,6 +55,8 @@ get_prior(formula, family=binomial, data=d)
 
 ### Priors
 
+For each of the selected predictors, we select an uninformative prior distribution that encodes our previous knowledge about the causal phenomenon.
+
 ```{r priors}
 priors <- c(prior(normal(-1, 1), class = Intercept),
             prior(normal(0, 1), class = b),
@@ -59,7 +65,9 @@ priors <- c(prior(normal(-1, 1), class = Intercept),
             prior(exponential(1), class = sd))
 ```
 
-```{r model-prior}
+To assert that the priors are feasible, we sample from the priors without training the Bayesian model with the data.
+
+```{r model-prior, message=FALSE, warning=FALSE}
 m.prior <-
   brm(data = d, family = binomial, formula, prior = priors,
     iter = 4000, warmup = 1000, chains = 4, cores = 4,
@@ -68,15 +76,20 @@ m.prior <-
   )
 ```
 
+We visualize the results to graphically check the priors eligibility.
+
 ```{r prior-predictive-check}
 ndraws <- 400
-
-priorpc <- brms::pp_check(m.prior, type="bars", ndraws=ndraws)
-
-priorpc
+brms::pp_check(m.prior, type="bars", ndraws=ndraws)
 ```
 
-```{r model}
+The distribution of the predicted values for the response variable ($y_{rep}$) overlaps with the actually observed response variable distribution ($y$), confirming the feasibility of the priors.
+
+### Training
+
+Given the feasibility of the priors, we train the regression model. This process updates the prior distributions of all predictor coefficients.
+
+```{r model, message=FALSE, warning=FALSE}
 m <-
   brm(data = d, family = binomial, formula, prior = priors,
     iter = 4000, warmup = 1000, chains = 4, cores = 4,
@@ -85,24 +98,38 @@ m <-
   )
 ```
 
-```{r posterior-predictive-check}
-postpc <- brms::pp_check(m, type="bars", ndraws=ndraws)
+To assert that the training process worked correctly, we sample from the posterior distributions similar to the prior predictive check.
 
-postpc
+```{r posterior-predictive-check}
+brms::pp_check(m, type="bars", ndraws=ndraws)
 ```
+
+The distribution of the predicted values for the response variable ($y_{rep}$) still overlaps with the actually observed response variable distribution ($y$). Additionally, the distribution shrunk around the actually observed values, which indicates that the model has improved its predictive power through training.
+
+### Evaluation
+
+Finally, we evaluate the trained model. An initial glance at the predictor coefficients shows their posterior distribution.
 
 ```{r summary}
 summary(m)
 ```
 
-```{r}
+These coefficient distributions do not show the full uncertainty of the impact of each predictor, though. Therefore, we plot the marginal effect of relevant predictors. The most relevant predictor is the treatment of the experiment, the use of passive voice. The plot shows that the use of passive voice (`passive=TRUE`) slightly increases the likelihood of missing an actor, but since the confidence intervals overlap, this effect is not significant.
+
+```{r marginal-passive}
 conditional_effects(m, effects="passive")
 ```
 
-```{r}
+Similarly, we can visualize the isolated effect of industrial experience in requirements engineering. Again, the overlapping confidence intervals do not suggest a significant effect.
+
+```{r marginal-exp-re-industrial}
 conditional_effects(m, effects="ExpREInd")
 ```
 
-```{r}
+Finally, we can evaluate the model numerically. This is similar to the marginal effect, but can be summarized to the amount of times (in percent) that the use of passive voice produces fewer (-1), equal (0), or more (+1) missing actors.
+
+```{r evaluation}
 evaluate.model(m)
 ```
+
+The evaluation also supports that the effect of passive voice on the number of missing actors is not significant. 
