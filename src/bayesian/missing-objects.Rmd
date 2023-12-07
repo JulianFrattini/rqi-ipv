@@ -117,7 +117,24 @@ summary(m)
 These coefficient distributions do not show the full uncertainty of the impact of each predictor, though. Therefore, we plot the marginal effect of relevant predictors. The most relevant predictor is the treatment of the experiment, the use of passive voice. The plot shows that the use of passive voice (`passive=TRUE`) slightly increases the likelihood of missing a domain object, but since the confidence intervals overlap, this effect is not significant.
 
 ```{r marginal-passive}
-conditional_effects(m, effects="passive")
+marginal.passive <- conditional_effects(m, effects="passive")
+marginal.passive
+```
+
+Export the results to a `CSV` sheet to enable a figure of all three marginal plots in the end.
+
+```{r marginal-passive-export}
+marginal.passive.values <- data.frame(marginal.passive[1]) %>% 
+  select(passive.passive, passive.estimate__, passive.lower__, passive.upper__) %>% 
+  rename(all_of(c(
+    passive = "passive.passive",
+    estimate = "passive.estimate__", 
+    ci.lower = "passive.lower__", 
+    ci.upper = "passive.upper__"))) %>% 
+  mutate(
+    response = "objects"
+  ) %>% 
+  write_csv(file = "../../data/results/marginal-objects.csv")
 ```
 
 Finally, we can evaluate the model numerically. This is similar to the marginal effect, but can be summarized to the amount of times (in percent) that the use of passive voice produces fewer (-1), equal (0), or more (+1) missing domain objects.

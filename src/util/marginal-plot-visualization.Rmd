@@ -1,0 +1,59 @@
+---
+title: "Marginal Distribution Visualization"
+author: "Julian Frattini"
+date: '2023-12-07'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+This notebook generates a combined marginal plot of the three individual marginal plots of each model.
+
+## Data Loading
+
+First, we load the data of the marginal plots. This data is generated during the Bayesian analyses and contains the response variable, passive voice variable, average response, and the lower and upper bound of the 95% confidence interval.
+
+```{r data-loading}
+path_data <- "../../data/results"
+path_figures <- "../../figures/marginal"
+
+marginal.actors <- read.csv(file=file.path(path_data, "marginal-actors.csv"))
+marginal.objects <- read.csv(file=file.path(path_data, "marginal-objects.csv"))
+marginal.associations <- read.csv(file=file.path(path_data, "marginal-associations.csv"))
+```
+
+We combine the three data frames to one. Also, we order the response variables according to the research questions.
+
+```{r data-combination}
+d <- rbind(marginal.actors, marginal.associations, marginal.objects) %>% 
+  mutate(response = factor(response, levels=c("actors", "objects", "associations"), ordered=TRUE))
+```
+
+## Data Visualization
+
+Finally, visualize the six marginal distributions grouped by the response variable.
+
+```{r visualization}
+d %>% 
+  ggplot(aes(x=passive, y=estimate, color=passive)) +
+  geom_point(size=4) +
+  geom_errorbar(aes(ymin=ci.lower, ymax=ci.upper), lwd=1) +
+  coord_flip() +
+  facet_wrap(~response, ncol=1, strip.position = "left", 
+             labeller=as_labeller(c(actors="actors", objects="objects", associations="assoc."))) +
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+```
+
+This plot shows the isolated marginal effect of passive voice on the three response variables.
+
+```{r save-figure, include=FALSE}
+ggsave(file=file.path(path_figures, "marginal-passive.pdf"), device = "pdf",
+       width = 11, height = 5, units = "cm")
+```
+

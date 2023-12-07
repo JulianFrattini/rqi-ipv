@@ -120,10 +120,27 @@ summary(m)
 These coefficient distributions do not show the full uncertainty of the impact of each predictor, though. Therefore, we plot the marginal effect of relevant predictors. The most relevant predictor is the treatment of the experiment, the use of passive voice. The plot shows that the use of passive voice (`passive=TRUE`) slightly increases the likelihood of missing an association, but since the confidence intervals overlap, this effect is not significant.
 
 ```{r marginal-passive}
-conditional_effects(m, effects="passive")
+marginal.passive <- conditional_effects(m, effects="passive")
+marginal.passive
 ```
 
-This contradicts the conclusions of the original study. If we plot the marginal effects of missing actors and domain objects, we see that these also have a slight impact on the number of missing associations.
+Export the results to a `CSV` sheet to enable a figure of all three marginal plots in the end.
+
+```{r marginal-passive-export}
+marginal.passive.values <- data.frame(marginal.passive[1]) %>% 
+  select(passive.passive, passive.estimate__, passive.lower__, passive.upper__) %>% 
+  rename(all_of(c(
+    passive = "passive.passive",
+    estimate = "passive.estimate__", 
+    ci.lower = "passive.lower__", 
+    ci.upper = "passive.upper__"))) %>% 
+  mutate(
+    response = "associations"
+  ) %>% 
+  write_csv(file = "../../data/results/marginal-associations.csv")
+```
+
+The results contradict the conclusions of the original study. If we plot the marginal effects of missing actors and domain objects, we see that these also have a slight impact on the number of missing associations.
 
 ```{r marginal-actors-objects}
 conditional_effects(m, effects=c("actors.missing", "objects.missing"))

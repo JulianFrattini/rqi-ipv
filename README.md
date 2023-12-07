@@ -14,8 +14,11 @@ This repository contains the following artifacts:
     * [participants.csv](./data/raw/participants.csv) : general data about each experience (including an aggregated form of their experience)
     * [requirements.csv](./data/raw/requirements.csv) : meta-data about the requirements that were used in the study
     * [responses.csv](./data/raw/responses.csv) : evaluation of the domain models (i.e., number of missing actors, entities, and associations per domain model)
+  * results/ : folder containing the resulting marginal distributions as produced by the Bayesian data analyses
   * [ipv-data.csv](./data/ipv-data.csv) : table compiled from the raw data by the [data preparation script](./src/util/data-preparation.Rmd)
 * figures/ : folder containing all figures used in the manuscript reporting this reanalysis
+  * dags/ : folder of all directed, acyclic graphs (generated with `ggdag`)
+  * marginal/ : folder of all marginal plots (generated with `ggplot`)
 * src/ : folder containing all scripts
   * bayesian/ : folder containing the Bayesian re-analysis of the original hypotheses
     * [causal-assumptions.Rmd](./src/bayesian/causal-assumptions.Rmd) : notebook containing the explicit causal assumptions of the studied phenomenon
@@ -27,6 +30,7 @@ This repository contains the following artifacts:
   * util/ : folder containing all supporting scripts and notebooks
     * [data-loading.R](./src/util/data-loading.R) : script for loading the prepared data
     * [data-preparation.Rmd](./src/util/data-preparation.Rmd) : notebook that prepares and assembles the raw data such that it is fit for reanalysis
+    * [marginal-plot-visualization.Rmd](./src/util/marginal-plot-visualization.Rmd) : notebook generating one marginal plot from the three individual marginal plots of each Bayesian analysis
     * [model-eval.R](./src/util/model-eval.R) : script to evaluate the isolated difference of the response variable distribution based on different values of the treatment (passive voice)
 
 ## System Requirements
@@ -43,6 +47,7 @@ In order to fully utilize this replication package, ensure that you have [R](htt
 ```
 4. Install all missing packages via `install.packages(c("tidyverse","ggdag","dagitty","patchwork","brms","marginaleffects","rcompanion","psych"))`
 5. Create a folder called *fits* within *src/bayesian/* such that `brms` has a location to place all Bayesian models.
+6. Open the `rqi-ipv.Rproj` file with RStudio, which will setup the environment correctly.
 
 ## Application
 
