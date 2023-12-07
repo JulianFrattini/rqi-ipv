@@ -47,7 +47,8 @@ d %>%
              labeller=as_labeller(c(actors="actors", objects="objects", associations="assoc."))) +
   theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
+        axis.ticks.y=element_blank()) +
+  labs(y="Average likelihood of missing one")
 ```
 
 This plot shows the isolated marginal effect of passive voice on the three response variables.
