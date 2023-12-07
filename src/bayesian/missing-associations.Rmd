@@ -140,11 +140,54 @@ marginal.passive.values <- data.frame(marginal.passive[1]) %>%
   write_csv(file = "../../data/results/marginal-associations.csv")
 ```
 
-The results contradict the conclusions of the original study. If we plot the marginal effects of missing actors and domain objects, we see that these also have a slight impact on the number of missing associations.
+The results contradict the conclusions of the original study. If we investigate the marginal effects of missing actors and domain objects, we see that these also have a slight impact on the number of missing associations.
 
 ```{r marginal-actors-objects}
-conditional_effects(m, effects=c("actors.missing", "objects.missing"))
+marginal.others <- conditional_effects(m, 
+                                       effects=c("actors.missing", "objects.missing"),
+                                       conditions=data.frame(passive=c(TRUE)))
 ```
+
+To generate a combined plot, we extract the data from the marginal plot.
+
+```{r extract-marginal-values}
+marginal.missing.actors.values <- data.frame(marginal.others[1]) %>% 
+  select(actors.missing.actors.missing, actors.missing.estimate__, actors.missing.lower__, actors.missing.upper__) %>% 
+  rename(all_of(c(
+    n.missing = "actors.missing.actors.missing",
+    estimate = "actors.missing.estimate__",
+    ci.lower = "actors.missing.lower__",
+    ci.upper = "actors.missing.upper__"))) %>%
+  mutate(missing="actors")
+
+marginal.missing.objects.values <- data.frame(marginal.others[2]) %>% 
+  select(objects.missing.objects.missing, objects.missing.estimate__, objects.missing.lower__, objects.missing.upper__) %>% 
+  rename(all_of(c(
+    n.missing = "objects.missing.objects.missing",
+    estimate = "objects.missing.estimate__",
+    ci.lower = "objects.missing.lower__",
+    ci.upper = "objects.missing.upper__"))) %>%
+  mutate(missing="objects")
+
+marginal.missing.values <- rbind(marginal.missing.actors.values, marginal.missing.objects.values)
+```
+
+Then, we visualize the isolated effect of both missing actors and domain objects on the likelihood of missing an association.
+
+```{r visualize-marginal-actors-objects}
+marginal.missing.values %>% 
+  ggplot(aes(x=n.missing, y=estimate)) +
+  geom_line(aes(color=missing)) + 
+  geom_ribbon(aes(ymin=ci.lower, ymax=ci.upper, fill=missing), alpha=0.2) +
+  labs(x="Number of missing actors/objects", y="Likelihood of missing an association") +
+  theme(legend.position="bottom")
+```
+
+```{r save-marginal-plot, include=FALSE}
+ggsave(file="../../figures/marginal/marginal-transitive.pdf", device = "pdf",
+       width = 11, height = 9, units = "cm")
+```
+
 
 Similarly, we can visualize the isolated effect of industrial experience in requirements engineering. Again, the overlapping confidence intervals do not suggest a significant effect.
 
