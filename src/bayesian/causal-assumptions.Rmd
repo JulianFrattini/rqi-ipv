@@ -94,8 +94,8 @@ dag <- dagify(
   labels = c(Age = "Age", Program = "Program", ExpSEAca = "Academic experience in SE", ExpSEInd = "Industrial experience in SE", ExpProgAca = "Academic experience in Programming", ExpProgInd = "Industrial experience in Programming", ExpREAca = "Academic experience in RE", ExpREInd = "Industrial experience in RE", REQuizPerformance = "Performance in RE Quiz", passive = "Passive Voice", actors.missing = "Number of missing actors", objects.missing = "Number of missing domain objects", associations.missing = "Number of missing associations"),
   
   coords = list(
-    x=c(Age=0, Program=0.2, ExpProgAca=2.4, ExpProgInd=2.4, ExpSEAca=2, ExpSEInd=2, ExpREAca=2.4, ExpREInd=2.4, REQuizPerformance=2, passive=3, actors.missing=4, associations.missing=4,objects.missing=4),
-    y=c(Age=-1, Program=-2, ExpProgAca=0, ExpProgInd=-0.5, ExpSEAca=-1, ExpSEInd=-1.5, ExpREAca=-2, ExpREInd=-2.5, REQuizPerformance=-3, passive=-3.5, actors.missing=-1.5, associations.missing=-2.5,objects.missing=-3.5)
+    x=c(Age=0, Program=0.2, ExpProgAca=2, ExpProgInd=2, ExpSEAca=1.6, ExpSEInd=1.6, ExpREAca=2, ExpREInd=2, REQuizPerformance=1.6, passive=3, actors.missing=4, associations.missing=4,objects.missing=4),
+    y=c(Age=-1, Program=-2, ExpProgAca=0, ExpProgInd=-0.5, ExpSEAca=-1, ExpSEInd=-1.5, ExpREAca=-2, ExpREInd=-2.5, REQuizPerformance=-3.3, passive=-3.5, actors.missing=-1.5, associations.missing=-2.5,objects.missing=-3.5)
   )
 )
 
