@@ -1,6 +1,7 @@
 # Another Look on the Impact of Passive Voice Requirements on Domain Modelling
 
 [![GitHub](https://img.shields.io/github/license/JulianFrattini/rqi-ipv)](./LICENSE)
+[![DOI](https://zenodo.org/badge/725100581.svg)](https://zenodo.org/doi/10.5281/zenodo.10283010)
 
 This repository contains the reanalysis of the empirical study that investigated whether the use of passive voice in natural language requirements specifications has an impact on the domain modeling activity [1]. The authors of the original study disclosed their data at https://doi.org/10.5281/zenodo.7499290 and we reanalyze it with both a frequentist and a Bayesian approach.
 
