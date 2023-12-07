@@ -98,7 +98,14 @@ m <-
   )
 ```
 
-To assert that the training process worked correctly, we sample from the posterior distributions similar to the prior predictive check.
+To assert that the training process worked correctly, we plot the Markov chains.
+
+```{r mcmc-plot}
+plot(m)
+```
+
+
+All chains seem fine. Further, we sample from the posterior distributions similar to the prior predictive check.
 
 ```{r posterior-predictive-check}
 brms::pp_check(m, type="bars", ndraws=ndraws)
