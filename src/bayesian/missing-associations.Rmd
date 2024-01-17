@@ -190,9 +190,25 @@ marginal.missing.values %>%
   theme(legend.position="bottom")
 ```
 
+The above figure suggests that the number of missing actors/objects is continuous: the line and ribbon assign y values to x values between natural numbers (since those variables are integers). For a more intuitive interpretation, we just focus on the natural numbers for the number of missing actors/objects.
+
+```{r visualize-marginal-actors-objects-discrete}
+marginal.missing.values %>% 
+  mutate(n.missing=ifelse(missing=="objects" & n.missing%%1<0.02 & n.missing-1<0.02 & n.missing-1>-0.02, 1, n.missing)) %>% 
+  filter(n.missing%%1==0) %>% 
+  ggplot(aes(x=ifelse(missing=="actors", n.missing-0.1, n.missing+0.1), y=estimate, color=missing)) +
+  geom_point(size=4) +
+  geom_errorbar(aes(ymin=ci.lower, ymax=ci.upper), lwd=1, width=0.2) +
+  coord_flip() +
+  #scale_x_reverse() +
+  scale_x_reverse(breaks=c(0,1,2)) +
+  labs(x="No. of missing actors/objects", y="Likelihood of missing an association") +
+  theme(legend.position="bottom")
+```
+
 ```{r save-marginal-plot, include=FALSE}
 ggsave(file="../../figures/marginal/marginal-transitive.pdf", device = "pdf",
-       width = 11, height = 9, units = "cm")
+       width = 14, height = 8, units = "cm")
 ```
 
 
