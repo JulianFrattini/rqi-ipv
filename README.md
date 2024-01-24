@@ -3,7 +3,22 @@
 [![GitHub](https://img.shields.io/github/license/JulianFrattini/rqi-ipv)](./LICENSE)
 [![DOI](https://zenodo.org/badge/725100581.svg)](https://zenodo.org/doi/10.5281/zenodo.10283010)
 
-This repository contains the reanalysis of the empirical study that investigated whether the use of passive voice in natural language requirements specifications has an impact on the domain modeling activity [1]. The authors of the original study disclosed their data at https://doi.org/10.5281/zenodo.7499290 and we reanalyze it with both a frequentist and a Bayesian approach.
+This repository contains the reanalysis of the empirical study that investigated whether the use of passive voice in natural language requirements specifications has an impact on the domain modeling activity [1]. The authors of the original study disclosed their data at https://doi.org/10.5281/zenodo.7499290 and we reanalyze it with both a frequentist and a Bayesian approach. See the section on author and article details for a reference to the publication discussing the method and results.
+
+## Author and Article Details
+
+This repository is procured by the following researchers.
+
+| Name | Affiliation | Contact |
+|---|---|---|
+| Julian Frattini* | Blekinge Institute of Technology | julian.frattini@bth.se |
+| Davide Fucci | Blekinge Institute of Technology | |
+| Richard Torkar | Chalmers, University of Gothenburg, and Stellenbosch Institute for Advanced Study (STIAS) | |
+| Daniel Mendez | Blekinge Institute of Technology and fortiss GmbH | |
+
+The * marks the corresponding author.
+
+Cite this work as follows: Frattini, J., Fucci, D., Torkar, R., & Mendez, D. (2024). A Second Look at the Impact of Passive Voice Requirements on Domain Modeling: Bayesian Reanalysis of an Experiment. In *1st International Workshop on Methodological Issues with Empirical Studies in Software Engineering (WSESE2024).*
 
 ## Description
 
@@ -36,7 +51,7 @@ This repository contains the following artifacts:
 
 ## System Requirements
 
-In order to fully utilize this replication package, ensure that you have [R](https://ftp.acc.umu.se/mirror/CRAN/) (version > 4.0) and (RStudio)[https://posit.co/download/rstudio-desktop/#download] installed on your machine. Then, ensure the following steps:
+In order to fully utilize this replication package, ensure that you have [R](https://ftp.acc.umu.se/mirror/CRAN/) (version > 4.0) and [RStudio](https://posit.co/download/rstudio-desktop/#download) installed on your machine. Then, ensure the following steps:
 
 1. Install the `rstan` toolchain by following the instructions for [Windows](https://github.com/stan-dev/rstan/wiki/Configuring-C---Toolchain-for-Windows#r40), [Mac OS](https://github.com/stan-dev/rstan/wiki/Configuring-C---Toolchain-for-Mac), or [Linux](https://github.com/stan-dev/rstan/wiki/Configuring-C-Toolchain-for-Linux) respectively.
 2. Restart RStudio and follow the instructions starting with the [Installation of RStan](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#installation-of-rstan)
